@@ -11,6 +11,15 @@
 
 #include <APA102.h>
 
+// States
+#define IDLE      0
+#define COUNTDOWN 1
+#define TRIGGERED 2
+#define ARMED     3
+
+// Constants
+#define THRESHOLD 10
+
 // Define which pins to use.
 const uint8_t dataPin = 11;
 const uint8_t clockPin = 12;
@@ -57,7 +66,11 @@ ring_set_progress(rgb_color color, progress){
     for(uint8_t i = 0; i < progress; i++){
         colors[i] = color;
     }
-    ledSrtrip.write(colors, ledCount, brightness);
+    ledStrip.write(colors, ledCount, brightness);
+}
+
+ring_set(rgb_color color){
+    ring_set_progress(color, ledCount);
 }
 
 void loop()
@@ -73,4 +86,39 @@ void loop()
   ledStrip.write(colors, ledCount, brightness);
 
   delay(10);
+
+  // Check for messages
+  
+  static uint16_t i = 0;
+  switch case state:
+    case IDLE:
+      ring_set()
+      if(message == "arm"){
+        state = ARMED;
+      }else if(message == "countdown"){
+        state = COUNTDOWN
+      }
+      break;
+    case COUNTDOWN:
+      if(i > countdowntime){
+        state = ARMED;
+      }
+      i++;
+      break;
+    case TRIGGERED:
+      // Send trigger message
+      state = IDLE;
+      break;
+    case ARMED:
+      ring_set()
+      uint8_t sensor = 0;
+      // Read sensor
+      if(sensor > THRESHOLD){
+        state = TRIGGERED;
+      }
+      break;
+    case default:
+      break;
+  
 }
+
